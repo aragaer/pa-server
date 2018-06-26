@@ -2,8 +2,9 @@
 import getpass, imaplib
 
 def main():
-    M = imaplib.IMAP4(host="127.0.0.1", port=8007)
-    M.login(getpass.getuser(), "")
+    M = imaplib.IMAP4(host="netbook-eth")
+    #M.login(getpass.getuser(), "")
+    M.login("aragaer", "secret")
     M.select()
     typ, data = M.search(None, 'ALL')
     for num in data[0].split():
