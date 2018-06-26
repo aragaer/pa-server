@@ -1,3 +1,4 @@
-server=
-send_port=8006
-recv_port=8007
+[server]
+host=
+send=8006
+recv=8007

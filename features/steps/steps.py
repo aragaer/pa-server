@@ -5,17 +5,21 @@ from behave import *
 from nose.tools import eq_
 
 
-def try_connect(address):
+@step('{address} is accepting connections')
+def try_connect(context, address):
     sock = socket.socket()
-    result = sock.connect_ex(address)
+    host, port = address.split(':')
+    result = sock.connect_ex((host, int(port)))
     eq_(result, 0, "Send socket: " + os.strerror(result))
     sock.close()
 
 
 @given('the server is running')
 def step_impl(context):
-    try_connect(context.send_address)
-    raise NotImplementedError('STEP: Given the server is running')
+    context.execute_steps('''
+    Given %s is accepting connections
+      And %s is accepting connections
+    ''' % (context.send_address, context.recv_address))
 
 
 @given('pa is configured to use the server')
