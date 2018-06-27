@@ -12,3 +12,6 @@ def before_all(context):
     srv = config['server']
     context.send_address = srv['host']+":"+srv['send']
     context.recv_address = srv['host']+":"+srv['recv']
+
+    context.pa_login = config['pa']['login']
+    context.pa_pass = config['pa']['pass']

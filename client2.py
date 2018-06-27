@@ -53,7 +53,7 @@ class Idler:
 
 
 def main():
-    M = imaplib2.IMAP4("netbook-eth")
+    M = imaplib2.IMAP4("netbook-eth", port=8007)
     M.login("aragaer","secret")
     M.select("INBOX")
     typ, data = M.search(None, 'ALL')
@@ -61,6 +61,7 @@ def main():
         typ, data = M.fetch(num, '(RFC822)')
         print(num, data[0][1].strip())
         M.store(num, "+FLAGS", r'\Seen \Deleted')
+    M.expunge()
     idler = Idler(M)
     idler.start()
 

@@ -2,3 +2,7 @@
 host=
 send=8006
 recv=8007
+
+[pa]
+login=
+pass=

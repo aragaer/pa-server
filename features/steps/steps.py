@@ -4,6 +4,8 @@ import socket
 from behave import *
 from nose.tools import eq_
 
+from client import ImapConnection
+
 
 @step('{address} is accepting connections')
 def try_connect(context, address):
@@ -24,13 +26,16 @@ def step_impl(context):
 
 @given('pa is configured to use the server')
 def step_impl(context):
-    raise NotImplementedError('STEP: Given pa is configured to use the server')
+    pass
 
 
 @given('pa is connected to the server')
 def step_impl(context):
-    raise NotImplementedError('STEP: Given pa is connected to the server')
-
+    context.pa_conn = ImapConnection(context.recv_address,
+                                     context.pa_login,
+                                     context.pa_pass)
+    context.add_cleanup(context.pa_conn.stop)
+    context.pa_conn.start()
 
 @given('the client is set up correctly')
 def step_impl(context):

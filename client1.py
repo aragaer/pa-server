@@ -2,7 +2,7 @@
 import getpass, imaplib
 
 def main():
-    M = imaplib.IMAP4(host="netbook-eth")
+    M = imaplib.IMAP4(host="netbook-eth", port=8007)
     #M.login(getpass.getuser(), "")
     M.login("aragaer", "secret")
     M.select()
