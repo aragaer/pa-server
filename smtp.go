@@ -7,7 +7,9 @@ import (
 )
 
 func main() {
-	cfg := &guerrilla.AppConfig{}
+	cfg := &guerrilla.AppConfig{
+		AllowedHosts: []string{"human", "brain"},
+	}
 
 	sc := guerrilla.ServerConfig{
 		ListenInterface: ":8006",
@@ -20,6 +22,6 @@ func main() {
 	if err == nil {
 		fmt.Println("Server Started!")
 	}
-	
-	select{}
+
+	select {}
 }
