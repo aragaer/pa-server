@@ -3,6 +3,8 @@
 import configparser
 import os
 
+from runner import Runner
+
 
 def before_all(context):
     this_dir = os.path.dirname(__file__)
@@ -13,5 +15,12 @@ def before_all(context):
     context.send_address = srv['host']+":"+srv['send']
     context.recv_address = srv['host']+":"+srv['recv']
 
-    context.pa_login = config['pa']['login']
-    context.pa_pass = config['pa']['pass']
+    context.config = config
+    context.runner = Runner()
+    context.runner.update_config({'imap-client':
+                                  {'command': 'pa-client',
+                                   'type': 'stdio'}})
+
+
+def before_scenario(context, _):
+    context.messages = []

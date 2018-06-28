@@ -6,3 +6,7 @@ recv=8007
 [pa]
 login=
 pass=
+
+[client]
+login=
+pass=

@@ -7,7 +7,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ImapConnection:
-    def __init__(self, host_port, login, password):
+    def __init__(self, host_port, login, password, onmessage):
         if ':' in host_port:
             host, port = host_port.split(':')
             self._conn = imaplib2.IMAP4(host, port=int(port))

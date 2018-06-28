@@ -4,7 +4,7 @@ import os
 import smtplib
 
 sender = 'malena@brain'
-receivers = ['aragaer']
+receivers = ['aragaer@human']
 
 message = "Приветик".encode()
 

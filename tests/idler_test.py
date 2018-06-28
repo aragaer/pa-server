@@ -12,6 +12,7 @@ class ConnectionTest(unittest.TestCase):
 
     _imap = None
     _idler = None
+    _messages = None
 
     def setUp(self):
         patcher = patch('imaplib2.IMAP4')
@@ -22,8 +23,14 @@ class ConnectionTest(unittest.TestCase):
         self._idler = patcher.start()
         self.addCleanup(patcher.stop)
 
+        self._messages = []
+
+    def _on_message(self, message):
+        self._messages.append(message)
+
     def test_create(self):
-        conn = ImapConnection("localhost", "login", "pass")
+        conn = ImapConnection("localhost", "login", "pass",
+                              onmessage=self._on_message)
 
         self._imap.assert_called_once_with("localhost")
         self._imap.return_value.login.assert_called_once_with("login", "pass")
@@ -31,12 +38,13 @@ class ConnectionTest(unittest.TestCase):
         self._idler.assert_called_once_with(self._imap.return_value)
 
     def test_create_port(self):
-        conn = ImapConnection("localhost:8080", "login", "pass")
+        conn = ImapConnection("localhost:8080", "login", "pass",
+                              onmessage=self._on_message)
 
         self._imap.assert_called_once_with("localhost", port=8080)
 
     def test_start(self):
-        conn = ImapConnection("hello", "world", "")
+        conn = ImapConnection("hello", "world", "", None)
         self.addCleanup(conn.stop)
 
         conn.start()
@@ -44,13 +52,11 @@ class ConnectionTest(unittest.TestCase):
         self._idler.return_value.start.assert_called_once_with()
 
     def test_stop(self):
-        conn = ImapConnection("hello", "world", "")
+        conn = ImapConnection("hello", "world", "", None)
         conn.stop()
 
         self._imap.return_value.logout.assert_called_once()
         self._imap.return_value.close.assert_called_once()
-
-    #def test_double_stop(self):
 
 
 class IdlerTest(unittest.TestCase):
