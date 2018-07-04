@@ -7,21 +7,19 @@ import (
 )
 
 func main() {
-	cfg := &guerrilla.AppConfig{
-		AllowedHosts: []string{"human", "brain"},
-	}
+	d := guerrilla.Daemon{}
+	d.AddProcessor("LdaValidator", LdaValidator)
+	d.AddProcessor("LdaSaver", LdaSaver)
 
-	sc := guerrilla.ServerConfig{
-		ListenInterface: ":8006",
-		IsEnabled:       true,
+	if _, err := d.LoadConfig("server.conf"); err != nil {
+		fmt.Println("LoadConfig failed", err)
+		return
 	}
-	cfg.Servers = append(cfg.Servers, sc)
-	d := guerrilla.Daemon{Config: cfg}
-	err := d.Start()
-
-	if err == nil {
-		fmt.Println("Server Started!")
+	if err := d.Start(); err != nil {
+		fmt.Println("Server start failed", err)
+		return
 	}
+	fmt.Println("Server Started!")
 
 	select {}
 }
