@@ -1,6 +1,5 @@
 module Lib
-    ( printAndDeleteAll
-    , mainLoop
+    ( mainLoop
     ) where
 
 import qualified Data.ByteString.Char8 as BS
@@ -21,12 +20,11 @@ printAndDelete conn uid = do
     BS.putStr $ msgToByteString m
     store conn uid $ PlusFlags [Seen, Deleted]
 
-printAndDeleteAll conn = do
-    search conn [ALLs] >>= mapM (printAndDelete conn)
-    expunge conn
-
 mainLoop :: IMAPConnection -> IO ()
 mainLoop conn = do
-    idle conn 2000
-    printAndDeleteAll conn
+    all <- search conn [UNFLAG Deleted]
+    if null all
+      then idle conn 60000
+      else mapM_ (printAndDelete conn) all
+    expunge conn
     mainLoop conn

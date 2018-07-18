@@ -13,6 +13,5 @@ main = do
      conn <- connectIMAPPort (args!!0) $ read (args!!1)
      login conn (args!!2) (args!!3)
      select conn "INBOX"
-     printAndDeleteAll conn
      mainLoop conn
      putStrLn "Exiting"
