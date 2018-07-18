@@ -8,8 +8,6 @@ import socket
 from behave import *
 from nose.tools import eq_, ok_
 
-from client import ImapConnection
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,11 +43,12 @@ def step_impl(context):
                                              context.config['pa']['pass']])
     context.add_cleanup(context.runner.terminate, 'imap-client')
     context.channel = context.runner.get_channel("imap-client")
+    context.messages = b''
 
 
 @given('the client is set up correctly')
 def step_impl(context):
-    context.client_smtp = smtplib.SMTP(context.config['server']['host'],
+    context.client_smtp = smtplib.LMTP(context.config['server']['host'],
                                        port=context.config['server']['send'])
 
 
@@ -58,9 +57,8 @@ def step_impl(context, action):
     user = context.config['client']['login']
     pa = context.config['pa']['login']
     sender = user+"@human"
-    receivers = [pa+"@brain"]
     message = json.dumps({'from': user, 'to': pa, 'action': action})
-    context.client_smtp.sendmail(sender, receivers, message.encode())
+    context.client_smtp.sendmail(sender, pa, b'\r\n'+message.encode())
 
 
 def timeout(signum, _):
@@ -71,6 +69,7 @@ def _get_message(context):
     if not context.messages:
         signal.signal(signal.SIGALRM, timeout)
         signal.alarm(1)
+        message = None
         while True:
             try:
                 message = context.channel.read()
@@ -79,18 +78,22 @@ def _get_message(context):
             if message:
                 break
         signal.alarm(0)
-        _LOGGER.debug("Got message %s", message)
         if message is not None:
-            context.messages.extend(message)
-    if context.messages:
-        result = context.messages.pop(0)
-        _LOGGER.info("got reply '%s'", result)
-        return result
-    _LOGGER.info("got no reply")
+            context.messages += message
+            _LOGGER.debug("messages [%s]", message)
+    eol = context.messages.find(b'\n')
+    if eol == -1:
+        _LOGGER.info("got no reply")
+        return
+    result = context.messages[:eol]
+    context.messages = context.messages[eol:]
+    _LOGGER.info("got reply '%s'", result)
+    return json.loads(result.decode())
 
 
 @then('pa receives the \'{event}\' event')
 def step_impl(context, event):
     message = _get_message(context)
     ok_(message)
+    _LOGGER.info(message)
     eq_(message['action'], event)
