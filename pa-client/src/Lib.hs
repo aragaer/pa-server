@@ -1,33 +1,32 @@
 module Lib
-    ( outputAll
+    ( printAndDeleteAll
     , mainLoop
     ) where
 
-import Control.Monad
-import qualified Data.ByteString.Char8 as BS8
+import qualified Data.ByteString.Char8 as BS
 import Data.String.Utils
 import Network.HaskellNet.IMAP
 import Network.HaskellNet.IMAP.Connection
 import Network.HaskellNet.IMAP.Types
 
-getText :: [(String, String)] -> [BS8.ByteString]
-getText m = do
-    (f, d) <- m
-    guard (f == "RFC822.TEXT")
-    return $ BS8.pack $ strip d
+msgToByteString :: [(String, String)] -> BS.ByteString
+msgToByteString m = BS.unlines
+    [ BS.pack $ strip d
+    | (f, d) <- m
+    , f == "RFC822.TEXT" ]
 
-output :: IMAPConnection -> UID -> IO ()
-output conn uid = do
-    fetchByString conn uid "(RFC822.TEXT)"
-        >>= BS8.putStr . BS8.unlines . getText
+printAndDelete :: IMAPConnection -> UID -> IO ()
+printAndDelete conn uid = do
+    m <- fetchByString conn uid "(RFC822.TEXT)"
+    BS.putStr $ msgToByteString m
     store conn uid $ PlusFlags [Seen, Deleted]
 
-outputAll conn = do
-    search conn [ALLs] >>= mapM (output conn)
+printAndDeleteAll conn = do
+    search conn [ALLs] >>= mapM (printAndDelete conn)
     expunge conn
 
 mainLoop :: IMAPConnection -> IO ()
 mainLoop conn = do
     idle conn 2000
-    outputAll conn
+    printAndDeleteAll conn
     mainLoop conn
