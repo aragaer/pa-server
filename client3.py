@@ -2,14 +2,13 @@
 "Uses runner and pa-client to read from imap"
 import atexit
 import configparser
-import logging
 import os
-import sys
 
 from runner import Runner
 
+from utils import LineReader
 
-_LOGGER = logging.getLogger(__name__)
+
 this_dir = os.path.dirname(__file__)
 conf_path = os.path.join(this_dir, 'features', 'server.conf')
 config = configparser.ConfigParser()
@@ -17,27 +16,6 @@ config.read(conf_path)
 
 srv = config['server']
 usr = config['pa']
-
-def timeout(signum, _):
-    raise Exception("timeout")
-
-
-def _get_message(channel):
-    message = None
-    while True:
-        try:
-            message = channel.read()
-        except:
-            break
-        if message:
-            _LOGGER.debug("Message %s", message)
-            break
-    _LOGGER.debug("Got message %s", message)
-    if message is not None:
-        _LOGGER.info("got reply '%s'", message)
-        return message
-    _LOGGER.info("got no reply")
-
 
 def main():
     runner = Runner()
@@ -50,12 +28,11 @@ def main():
                            'type': 'stdio'}})
     atexit.register(runner.terminate, 'imap-client')
     runner.ensure_running('imap-client')
+    reader = LineReader(runner.get_channel('imap-client'))
     while True:
-        message = _get_message(runner.get_channel('imap-client'))
-        if not message:
-            break
-        print(message.decode(), end='')
+        message = reader.readline()
+        if message:
+            print(message.decode(), end='')
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, stream=sys.stderr)
     main()
