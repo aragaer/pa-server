@@ -71,7 +71,7 @@ class LineReaderTest(unittest.TestCase):
 
         self.assertEqual(line, b'')
 
-    def test_read_incomplete(self):
+    def test_read_partial(self):
         self._chan.put(b'line1')
         self._reader.readline()
         self._chan.put(b'\n')
