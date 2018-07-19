@@ -24,7 +24,7 @@ mainLoop :: IMAPConnection -> IO ()
 mainLoop conn = do
     all <- search conn [UNFLAG Deleted]
     if null all
-      then idle conn 60000
+      then idle conn 0
       else mapM_ (printAndDelete conn) all
     expunge conn
     mainLoop conn
